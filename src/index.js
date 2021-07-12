@@ -31,14 +31,52 @@ class TaskList extends React.Component {
     this.removeTask = this.removeTask.bind(this);
   }
 
-  returnTask = (newTask) => {
+  async componentDidMount(){
+    let tempState = [];
+    await fetch('https://localhost:5001/api/TodoItems')
+      .then(response => response.json())
+      .then(data => {
+        for(var i of data){
+          tempState.push(<Task taskID = {i.id} value={i.name} removeTask={this.removeTask}/>)
+        }
+      });
+
+    this.setState({tasks: tempState});
+  }
+
+  returnTask = async (newTask) => {
+
+    let key = -1;
+    await fetch('https://localhost:5001/api/TodoItems', {
+      method: 'POST',
+      headers: { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: newTask,
+      })
+    })
+    .then(response => response.json())
+    .then(data => {key = data.id});
+
     let temp = this.state.tasks;
-    temp.push(<Task value={newTask} removeTask={this.removeTask}/>)
+    temp.push(<Task taskID = {key} value={newTask} removeTask={this.removeTask}/>)
     this.setState({tasks: temp});
+
   };
 
   removeTask = (name) => {
-    this.setState({tasks: this.state.tasks.filter((item) => item.props.value != name)});
+    this.setState({tasks: this.state.tasks.filter((item) => {
+      if(item.props.value == name){
+        let id = item.props.taskID;
+        fetch('https://localhost:5001/api/TodoItems/' + id, {
+          method: 'DELETE'
+        });
+        return false;
+      }
+      return true;
+    })});
   };
     
 
@@ -84,13 +122,14 @@ class Input extends React.Component {
 function ToList(props){
   const list = props.list;
   const listed = list.map((value) =>
-    <li key = {value.list}>
+    <li key = {value.props.taskID.toString()}>
       {value}
     </li>);
   return listed;
 }
 
 function Task(props) {
+  const taskID = props.taskID;
   const task = props.value;
   const handleRemove = (event) => {
     event.preventDefault();
