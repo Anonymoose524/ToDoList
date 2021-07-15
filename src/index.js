@@ -37,7 +37,7 @@ class TaskList extends React.Component {
       .then(response => response.json())
       .then(data => {
         for(var i of data){
-          tempState.push(<Task taskID = {i.id} value={i.name} removeTask={this.removeTask}/>)
+          tempState.push(<Task taskID = {i.idNum} value={i.name} removeTask={this.removeTask}/>)
         }
       });
 
@@ -58,7 +58,7 @@ class TaskList extends React.Component {
       })
     })
     .then(response => response.json())
-    .then(data => {key = data.id});
+    .then(data => {key = data.idNum});
 
     let temp = this.state.tasks;
     temp.push(<Task taskID = {key} value={newTask} removeTask={this.removeTask}/>)
